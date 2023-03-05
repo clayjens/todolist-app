@@ -34,6 +34,7 @@ pub fn create_task(db_conn: &mut PgConnection) -> Result<()> {
     Ok(())
 }
 
+/// Returns a list of all tasks in the `tasks` table.
 pub fn get_tasks(db_conn: &mut PgConnection) -> Result<Vec<models::Task>> {
     use schema::tasks::dsl::*;
 
@@ -42,6 +43,7 @@ pub fn get_tasks(db_conn: &mut PgConnection) -> Result<Vec<models::Task>> {
     Ok(results)
 }
 
+/// Completes a task in the `tasks` table by id.
 pub fn complete_task(db_conn: &mut PgConnection, task_id: i32) -> Result<()> {
     use schema::tasks::dsl::*;
 
@@ -55,6 +57,7 @@ pub fn complete_task(db_conn: &mut PgConnection, task_id: i32) -> Result<()> {
     Ok(())
 }
 
+/// Deletes a task in the `tasks` table by id.
 pub fn delete_task(db_conn: &mut PgConnection, task_id: i32) -> Result<()> {
     use schema::tasks::dsl::*;
 
@@ -63,6 +66,8 @@ pub fn delete_task(db_conn: &mut PgConnection, task_id: i32) -> Result<()> {
     Ok(())
 }
 
+/// Parses a task selection string into a task id.
+/// Example: "1: My Task" -> 1
 pub fn task_id_from_selection(task_selection: &str) -> Result<i32> {
     let task_id = task_selection
         .split(": ")
@@ -73,6 +78,7 @@ pub fn task_id_from_selection(task_selection: &str) -> Result<i32> {
     Ok(task_id)
 }
 
+/// Represents the options for the main menu.
 #[derive(Debug)]
 pub enum MenuOption {
     CreateTask,
@@ -81,6 +87,7 @@ pub enum MenuOption {
     ListTasks,
 }
 
+/// Represents the options for the list tasks menu.
 #[derive(Debug)]
 pub enum ListTypeOption {
     All,
@@ -88,6 +95,7 @@ pub enum ListTypeOption {
     Incomplete,
 }
 
+/// Displays the MenuOption enum variants as a string.
 impl Display for MenuOption {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -99,6 +107,7 @@ impl Display for MenuOption {
     }
 }
 
+/// Displays the ListTypeOption enum variants as a string.
 impl Display for ListTypeOption {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

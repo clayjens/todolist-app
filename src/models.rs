@@ -3,6 +3,7 @@ use std::fmt::Display;
 use crate::schema::tasks;
 use diesel::prelude::*;
 
+/// A task in the `tasks` table represented as a struct.
 #[derive(Queryable, Debug)]
 pub struct Task {
     pub id: i32,
@@ -13,6 +14,7 @@ pub struct Task {
     pub updated_at: chrono::NaiveDateTime,
 }
 
+/// Displays the Task struct as a string.
 impl Display for Task {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -27,6 +29,7 @@ impl Display for Task {
     }
 }
 
+/// Allows for inserting a new task into the `tasks` table.
 #[derive(Insertable)]
 #[diesel(table_name = tasks)]
 pub struct NewTask<'a> {
