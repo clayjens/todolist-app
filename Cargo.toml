@@ -1,12 +1,11 @@
 [package]
 name = "todolist-app"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 publish = false
 authors = ["Clayton Jensen <clayton.jensen@yourmommas.house>"]
 description = "A simple todo list CLI app that uses a postgres database to store tasks"
 license = "MIT"
-license-file = "LICENSE"
 readme = "README.md"
 
 [[bin]]

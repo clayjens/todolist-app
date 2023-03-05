@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 pub use color_eyre::eyre::Result;
 use diesel::pg::PgConnection;
 pub use diesel::prelude::*;
@@ -17,8 +19,8 @@ pub fn establish_connection() -> Result<PgConnection> {
 pub fn create_task(db_conn: &mut PgConnection) -> Result<()> {
     use schema::tasks;
 
-    let title = inquire::Text::new("Title: ").prompt()?;
-    let description = inquire::Text::new("Description: ").prompt()?;
+    let title = inquire::Text::new("Title").prompt()?;
+    let description = inquire::Text::new("Description").prompt()?;
 
     let new_task = models::NewTask {
         title: &title,
@@ -59,4 +61,50 @@ pub fn delete_task(db_conn: &mut PgConnection, task_id: i32) -> Result<()> {
     diesel::delete(tasks.find(task_id)).execute(db_conn)?;
 
     Ok(())
+}
+
+pub fn task_id_from_selection(task_selection: &str) -> Result<i32> {
+    let task_id = task_selection
+        .split(": ")
+        .next()
+        .expect("Failed to get task id")
+        .parse::<i32>()?;
+
+    Ok(task_id)
+}
+
+#[derive(Debug)]
+pub enum MenuOption {
+    CreateTask,
+    DeleteTasks,
+    CompleteTasks,
+    ListTasks,
+}
+
+#[derive(Debug)]
+pub enum ListTypeOption {
+    All,
+    Completed,
+    Incomplete,
+}
+
+impl Display for MenuOption {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MenuOption::CreateTask => write!(f, "Create A Task"),
+            MenuOption::DeleteTasks => write!(f, "Delete Tasks"),
+            MenuOption::CompleteTasks => write!(f, "Complete Tasks"),
+            MenuOption::ListTasks => write!(f, "List Tasks"),
+        }
+    }
+}
+
+impl Display for ListTypeOption {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ListTypeOption::All => write!(f, "All Tasks"),
+            ListTypeOption::Completed => write!(f, "Completed Tasks"),
+            ListTypeOption::Incomplete => write!(f, "Incomplete Tasks"),
+        }
+    }
 }

@@ -1,16 +1,17 @@
-use todolib;
+use todolib::{self, ListTypeOption, MenuOption};
 
 fn main() -> todolib::Result<()> {
     dotenvy::dotenv()?;
+
     let mut db_conn = todolib::establish_connection()?;
 
     let menu_selection = inquire::Select::new(
         "What would you like to do?",
         vec![
-            "Create A Task",
-            "Delete Tasks",
-            "Complete Tasks",
-            "List Tasks",
+            MenuOption::CreateTask,
+            MenuOption::DeleteTasks,
+            MenuOption::CompleteTasks,
+            MenuOption::ListTasks,
         ],
     )
     .prompt()?;
@@ -18,10 +19,10 @@ fn main() -> todolib::Result<()> {
     let all_tasks = todolib::get_tasks(&mut db_conn)?;
 
     match menu_selection {
-        "Create A Task" => {
+        MenuOption::CreateTask => {
             todolib::create_task(&mut db_conn)?;
         }
-        "Delete Tasks" => {
+        MenuOption::DeleteTasks => {
             if all_tasks.is_empty() {
                 println!("No tasks to delete");
                 return Ok(());
@@ -36,52 +37,45 @@ fn main() -> todolib::Result<()> {
             )
             .prompt()?;
 
-            for task in selected_tasks {
-                let task_id = task
-                    .split(": ")
-                    .next()
-                    .expect("Failed to get task id")
-                    .parse::<i32>()?;
-
+            for task_selection in selected_tasks {
+                let task_id = todolib::task_id_from_selection(&task_selection)?;
                 todolib::delete_task(&mut db_conn, task_id)?;
-                println!("Deleted Task:\n{task}");
+                println!("Deleted Task:\n{task_selection}");
             }
         }
-        "Complete Tasks" => {
+        MenuOption::CompleteTasks => {
             if all_tasks.is_empty() {
                 println!("No tasks to complete");
                 return Ok(());
             }
 
-            let selected_tasks = inquire::MultiSelect::new(
-                "Select Tasks To Complete",
-                all_tasks
-                    .iter()
-                    .filter(|task| !task.complete)
-                    .map(|task| format!("{}: {}", task.id, task.title))
-                    .collect(),
-            )
-            .prompt()?;
+            let completed_tasks = all_tasks
+                .iter()
+                .filter(|task| task.complete)
+                .map(|task| format!("{}: {}", task.id, task.title))
+                .collect::<Vec<_>>();
 
-            for task in selected_tasks {
-                let task_id = task
-                    .split(": ")
-                    .next()
-                    .expect("Failed to get task id")
-                    .parse::<i32>()?;
+            let selected_tasks =
+                inquire::MultiSelect::new("Select Tasks To Complete", completed_tasks).prompt()?;
 
+            for selected_task in selected_tasks {
+                let task_id = todolib::task_id_from_selection(&selected_task)?;
                 todolib::complete_task(&mut db_conn, task_id)?;
             }
         }
-        "List Tasks" => {
-            let list_type = inquire::Select::new(
-                "What type of list would you like to see?",
-                vec!["All", "Complete", "Incomplete"],
+        MenuOption::ListTasks => {
+            let list_type_selection = inquire::Select::new(
+                "What type of task would you like to see?",
+                vec![
+                    ListTypeOption::All,
+                    ListTypeOption::Completed,
+                    ListTypeOption::Incomplete,
+                ],
             )
             .prompt()?;
 
-            match list_type {
-                "All" => {
+            match list_type_selection {
+                ListTypeOption::All => {
                     if all_tasks.is_empty() {
                         println!("No tasks to list");
                         return Ok(());
@@ -91,7 +85,7 @@ fn main() -> todolib::Result<()> {
                         println!("{task}");
                     }
                 }
-                "Complete" => {
+                ListTypeOption::Completed => {
                     let complete_tasks = all_tasks
                         .iter()
                         .filter(|task| task.complete)
@@ -106,7 +100,7 @@ fn main() -> todolib::Result<()> {
                         println!("{task}");
                     }
                 }
-                "Incomplete" => {
+                ListTypeOption::Incomplete => {
                     let incomplete_tasks = all_tasks
                         .iter()
                         .filter(|task| !task.complete)
@@ -121,10 +115,8 @@ fn main() -> todolib::Result<()> {
                         println!("{task}");
                     }
                 }
-                _ => unreachable!(),
             }
         }
-        _ => unreachable!(),
     };
 
     Ok(())
