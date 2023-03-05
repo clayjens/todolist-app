@@ -1,0 +1,25 @@
+[package]
+name = "todolist-app"
+version = "1.0.0"
+edition = "2021"
+publish = false
+authors = ["Clayton Jensen <clayton.jensen@yourmommas.house>"]
+description = "A simple todo list CLI app that uses a postgres database to store tasks"
+license = "MIT"
+license-file = "LICENSE"
+readme = "README.md"
+
+[[bin]]
+name = "todo"
+path = "src/main.rs"
+
+[lib]
+name = "todolib"
+path = "src/lib.rs"
+
+[dependencies]
+chrono = "0.4.23"
+color-eyre = "0.6.2"
+diesel = { version = "2.0.3", features = ["postgres", "chrono"] }
+dotenvy = "0.15.6"
+inquire = "0.6.0"
